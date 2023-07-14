@@ -1,28 +1,54 @@
 # pylint:disable=C0111,C0103
 
+
+
 def detailed_orders(db):
     '''return a list of all orders (order_id, customer.contact_name,
     employee.firstname) ordered by order_id'''
-    pass  # YOUR CODE HERE
+    query = '''SELECT DISTINCT OrderDetails.OrderID, ContactName, FirstName
+FROM OrderDetails
+JOIN Orders ON OrderDetails.OrderID = Orders.OrderID
+JOIN Employees ON Employees.EmployeeID = Orders.EmployeeID
+JOIN Customers ON Customers.CustomerID = Orders.CustomerID
+ORDER BY OrderDetails.OrderID'''
+
+    db.execute(query)
+    detailed_order = db.fetchall()
+    return detailed_order
 
 def spent_per_customer(db):
-    '''return the total amount spent per customer ordered by ascending total
-    amount (to 2 decimal places)
-    Exemple :
-        Jean   |   100
-        Marc   |   110
-        Simon  |   432
-        ...
-    '''
-    pass  # YOUR CODE HERE
+
+    query = '''SELECT Customers.ContactName, ROUND(SUM(OrderDetails.Quantity * OrderDetails.UnitPrice), 2) AS TotalAmount
+            FROM Customers
+            JOIN Orders ON Customers.CustomerID = Orders.CustomerID
+            JOIN OrderDetails ON Orders.OrderID = OrderDetails.OrderID
+            GROUP BY Customers.ContactName
+            ORDER BY TotalAmount ASC;'''
+
+    db.execute(query)
+    detailed_order = db.fetchall()
+    return detailed_order
 
 def best_employee(db):
-    '''Implement the best_employee method to determine who’s the best employee! By “best employee”, we mean the one who sells the most.
-    We expect the function to return a tuple like: ('FirstName', 'LastName', 6000 (the sum of all purchase)). The order of the information is irrelevant'''
-    pass  # YOUR CODE HERE
+
+    query = """SELECT Employees.FirstName, Employees.LastName, SUM(OrderDetails.Quantity * OrderDetails.UnitPrice) AS TotalSales
+        FROM Employees
+        JOIN Orders ON Employees.EmployeeID = Orders.EmployeeID
+        JOIN OrderDetails ON Orders.OrderID = OrderDetails.OrderID
+        GROUP BY Employees.FirstName, Employees.LastName
+        ORDER BY TotalSales DESC
+        LIMIT 1"""
+    db.execute(query)
+    orders = db.fetchone()
+    return orders
 
 def orders_per_customer(db):
-    '''Return a list of tuples where each tuple contains the contactName
-    of the customer and the number of orders they made (contactName,
-    number_of_orders). Order the list by ascending number of orders'''
-    pass  # YOUR CODE HERE
+
+    query = '''SELECT Customers.ContactName, COUNT(Orders.OrderID) AS number_of_orders
+FROM Customers
+JOIN Orders ON Customers.CustomerID = Orders.CustomerID
+GROUP BY Customers.ContactName
+ORDER BY number_of_orders ASC;'''
+    db.execute(query)
+    orders  = db.fetchall()
+    return orders
